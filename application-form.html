@@ -60,12 +60,21 @@
         document.getElementById('applicationForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const formData = new FormData(this);
+            const data = {
+                name: this.name.value,
+                address: this.address.value,
+                phone: this.phone.value,
+                crop: this.crop.value,
+                quantity: this.quantity.value
+            };
 
             fetch('https://script.google.com/macros/s/AKfycbwBf0Y3hL13sjjjyDd55EsdAwJNNsT8sQC-Mvkbkj_5nSC1olMHFoYi9wd3s21iB6bh/exec', {
                 method: 'POST',
                 mode: 'no-cors',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             })
             .then(() => {
                 alert('신청이 완료되었습니다');
