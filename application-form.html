@@ -14,20 +14,23 @@
 
     <main>
         <section class="form-section">
-            <form id="applicationForm" method="post">
+            <form id="applicationForm" method="post" novalidate>
                 <div class="form-group">
                     <label for="name">이름</label>
                     <input type="text" id="name" name="name" required>
+                    <p class="error-message" id="nameError"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="address">주소</label>
                     <textarea id="address" name="address" rows="3" required></textarea>
+                    <p class="error-message" id="addressError"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="phone">연락처</label>
                     <input type="tel" id="phone" name="phone" required>
+                    <p class="error-message" id="phoneError"></p>
                 </div>
 
                 <div class="form-group">
@@ -40,11 +43,13 @@
                         <option value="옥수수">옥수수</option>
                         <option value="감자">감자</option>
                     </select>
+                    <p class="error-message" id="cropError"></p>
                 </div>
 
                 <div class="form-group">
                     <label for="quantity">수량 (kg)</label>
                     <input type="number" id="quantity" name="quantity" min="1" required>
+                    <p class="error-message" id="quantityError"></p>
                 </div>
 
                 <button type="submit" class="btn">신청 제출</button>
@@ -57,30 +62,70 @@
     </footer>
 
     <script>
-        document.getElementById('applicationForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        const form = document.getElementById('applicationForm');
 
-            const data = {
-                name: this.name.value,
-                address: this.address.value,
-                phone: this.phone.value,
-                crop: this.crop.value,
-                quantity: this.quantity.value
-            };
+        function showError(input, errorElement, message) {
+            input.classList.add('input-error');
+            errorElement.textContent = message;
+        }
+
+        function clearErrors(formElement) {
+            formElement.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            formElement.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            clearErrors(form);
+
+            const name = form.name.value.trim();
+            const address = form.address.value.trim();
+            const phone = form.phone.value.trim();
+            const crop = form.crop.value;
+            const quantity = form.quantity.value.trim();
+
+            let valid = true;
+
+            if (!name) {
+                showError(form.name, document.getElementById('nameError'), '필수 입력 항목입니다');
+                valid = false;
+            }
+
+            if (!address) {
+                showError(form.address, document.getElementById('addressError'), '필수 입력 항목입니다');
+                valid = false;
+            }
+
+            if (!phone) {
+                showError(form.phone, document.getElementById('phoneError'), '필수 입력 항목입니다');
+                valid = false;
+            }
+
+            if (!crop) {
+                showError(form.crop, document.getElementById('cropError'), '필수 입력 항목입니다');
+                valid = false;
+            }
+
+            if (!quantity || Number(quantity) < 1) {
+                showError(form.quantity, document.getElementById('quantityError'), '필수 입력 항목입니다');
+                valid = false;
+            }
+
+            if (!valid) {
+                return;
+            }
+
+            const data = { name, address, phone, crop, quantity };
 
             fetch('https://script.google.com/macros/s/AKfycbwBf0Y3hL13sjjjyDd55EsdAwJNNsT8sQC-Mvkbkj_5nSC1olMHFoYi9wd3s21iB6bh/exec', {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify(data)
             })
             .then(() => {
-                alert('신청이 완료되었습니다');
-                this.reset();
+                window.location.href = 'complete.html';
             })
-            .catch(error => {
+            .catch(() => {
                 alert('신청 중 오류가 발생했습니다. 다시 시도해주세요.');
             });
         });
